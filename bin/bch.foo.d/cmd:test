@@ -1,0 +1,47 @@
+#!/bin/bash
+
+test_source_err () {
+    . bch:foo err 23 2>/dev/null
+    [ "$?" == "23" ]
+}
+test_call_err () {
+    bch.foo err 23 2>/dev/null
+    [ "$?" == "23" ]
+}
+
+test_source_export_set () {
+    export a=
+    . bch:foo export a b c
+    [ "${a}" == "b c" ]
+}
+test_source_export_clear () {
+    export a=B
+    . bch:foo export a
+    [ "${a}" == "" ]
+}
+
+runall () {
+    TESTCOUNT=0
+    FAILCOUNT=0
+    runtest test_call_err
+    runtest test_source_err
+    runtest test_source_export_set
+    runtest test_source_export_clear
+    echo number of tests: $TESTCOUNT
+    echo number of fails: $FAILCOUNT
+}
+
+__pass () {
+    echo "[pass] $1"
+}
+
+__fail () {
+    echo "[fail] $1"
+    export FAILOUNT=$(( $FAILCOUNT + 1 ))
+}
+runtest () {
+    export TESTCOUNT=$(( $TESTCOUNT + 1 ))
+    $1 && __pass $1 || __fail $1
+}
+
+runall

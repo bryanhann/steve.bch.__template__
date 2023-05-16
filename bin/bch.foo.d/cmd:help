@@ -1,0 +1,66 @@
+#!/usr/bin/env python3
+import sys
+import os
+from pathlib import Path
+import textwrap
+
+HERE = Path(__file__).parent
+DOCS = HERE/'docs'
+NAME = os.environ[ '_0NAME' ]
+CMD = '  ' + NAME
+SRC = '. ' + NAME[:3] + ':' + NAME[4:]
+
+def main():
+    name = (sys.argv + [''])[1]
+    if name:
+        help4modename( 'cmd:' + name )
+        help4modename( 'src:' + name )
+        print()
+    else:
+        help4all()
+
+
+def help4all():
+    print(f"USAGE:")
+    acc = {}
+    modepaths = HERE.glob( '*:*' )
+    modenames = sorted( [ xx.name for xx in modepaths ] )
+    maxlen = max(map(len,map(name4modename,modenames)))
+    for modename in modenames:
+        mode = mode4modename(modename)
+        name = name4modename(modename)
+        help = doc4modename(modename).split('\n')[0].strip()
+        name = name.ljust(maxlen)
+        call = caller4modename(modename)
+        print( f"    {bold(call)} {bold(name)}  {help}")
+    print(f"""\nFor help on a subcommand:\n    {bold( CMD + ' help SUBCOMMAND')}""")
+def help4modename( modename ):
+    caller = caller4modename( modename )
+    mode = mode4modename( modename )
+    name = name4modename( modename )
+    path = HERE/modename
+    doc  = indent(doc4modename(modename).strip())
+    if path.is_file():
+        if mode=='cmd': print( "\nCALL USAGE:" )
+        if mode=='src': print( "\nSOURCE USAGE:" )
+        print(f"    {bold(caller.strip())} {bold(name)}\n")
+        print(doc)
+
+def caller4modename(modename):
+    mode = mode4modename(modename)
+    if mode == 'cmd': return CMD
+    if mode == 'src': return SRC
+    assert not 'unreachable'
+
+def doc4modename( modename ):
+    path = DOCS/modename
+    if not path.is_file():
+        return '(undocumented)'
+    return path.read_text().strip()
+
+def bold(text): return "\033[1m" + text + "\033[0m"
+def indent(text): return textwrap.indent(text, prefix="    ")
+def name4modename(modename): return modename.split(':')[1]
+def mode4modename(modename): return modename.split(':')[0]
+if __name__ == '__main__':
+    main()

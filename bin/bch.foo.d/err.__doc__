@@ -1,4 +1,0 @@
-Exit with specified errorlevel
-
-Example:
-    ... err 23

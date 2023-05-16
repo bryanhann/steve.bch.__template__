@@ -1,0 +1,3 @@
+Exit with specified errorlevel
+
+Pass the errorlevel as the first argument.

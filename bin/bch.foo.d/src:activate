@@ -1,0 +1,4 @@
+echo ++[${_0NAME} ${_1NAME}] [$*]
+set | grep __BCH_
+echo --[${_0NAME} ${_1NAME}] [$*]
+

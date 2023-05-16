@@ -1,0 +1,10 @@
+#!/bin/sh
+main () {
+    [ -z "$1" ] && echo "[$_0NAME source:export]: missing first arg"
+    [ -z "$1" ] && return
+    export key=$1
+    shift
+    eval "export $key=\"$*\""
+}
+main $*
+

@@ -1,79 +1,40 @@
-export __BCH_NAME=bch.foo
+#!/bin/bash
+NAME=bch.foo
 
-##########################################################
-# Nothing below should be modified. The only thing that 
-# should be changed in using this template is the name
-# assigned to the "${__BCH_NAME}" environment variable on
-# the first line of this file.
-##########################################################
-
-
-
-
-___main () {
-    ___missing () { 
-        echo "${__BCH_NAME}: missing './${__BCH_PROG}'" >&2; 
-        export __BCH_ERR=99
+__called () {
+    export _0NAME=$(basename $1)
+    export _0PATH=$1
+    export _1NAME=cmd:${2-NULL}
+    export _1PATH=${_0PATH}.d/${_1NAME}
+    shift
+    shift
+    [ ! "${NAME}" == ${_0NAME} ] && {
+        echo ${_0PATH}: badly set \'\$NAME\'
+        exit 97
     }
-    ___invoke ()  { 
-        ${__BCH_MODE} ${__BCH_MAIN} $*
-        export __BCH_ERR=$?
-    }
-    ___enter () { [ -z "${__BCH_TRACE}" ] || echo "+++[$__BCH_PROG] $*" >&2 ; }
-    ___exit ()  { [ -z "${__BCH_TRACE}" ] || echo "---[$__BCH_PROG] $*" >&2 ; }
 
-    ___enter $*
-        [ -f $__BCH_MAIN ] || ___missing 
-        [ -f $__BCH_MAIN ] && ___invoke $*
-    ___exit $*
-    return ${__BCH_ERR}
+    [ ! -f ${_1PATH} ] && {
+        echo "[$_0NAME]: missing '$_1NAME'" >&2
+        exit 99
+    }
+    ${_1PATH} $*
+    exit $?
 }
 
-#---------------------------------------------------------
-# If the first argument is the special option '__trace'
-# then consume it and turn on tracing for this execution.
-#---------------------------------------------------------
-
-[ "$1" == "__trace" ] || export __BCH_TRACE=
-[ "$1" == "__trace" ] && export __BCH_TRACE=on
-[ "$1" == "__trace" ] && shift
-
-#---------------------------------------------------------
-# If the invoker passed no argument, assume that we were
-# invoked with the single argument '__null__'. Otherwise
-# consume the first argument and assign it to the env
-# variable "${__BCH_ONE}
-#---------------------------------------------------------
-
-export __BCH_ONE="${1-__null__}"
-shift
-
-#---------------------------------------------------------
-# Set the remainder of the "$__BCH_*" env variables with
-# respect to this script being called or sourced:
-#    __BCH_MODE  : set to '.' if sourced. Otherwise clear.
-#    __BCH_ZERO  : Full pathname to this script.
-#    __BCH_MAIN  : Full pathname of subcommand script
-#    __BCH_PROG  : Short descriptive name of subcommand/
-#---------------------------------------------------------
-
-
-[ "${0:0:1}" == "/" ] && {
-    # Assume that this script was called.
-    export __BCH_MODE=""
-    export __BCH_ZERO="$0"
-    export __BCH_MAIN="${__BCH_ZERO}.d/${__BCH_ONE}"
-    export __BCH_PROG="${__BCH_NAME}.d/${__BCH_ONE}"
-    ___main $*
-    exit ${__BCH_ERR}
-} || {
-    # Assume that this script was sourced.
-    export __BCH_MODE="."
-    export __BCH_ZERO="$(which ${__BCH_NAME})"
-    export __BCH_MAIN="${__BCH_ZERO}.s/${__BCH_ONE}"
-    export __BCH_PROG="${__BCH_NAME}.s/${__BCH_ONE}"
-    ___main $*
+__sourced () {
+    export _0NAME=$NAME
+    export _0PATH=$(which $NAME)
+    export _1NAME=src:${2-NULL}
+    export _1PATH=${_0PATH}.d/${_1NAME}
+    shift
+    shift
+    [ ! -f ${_1PATH} ] && {
+        echo "[. $_0NAME]: missing '$_1NAME'" >&2
+        return 97
+    }
+    . ${_1PATH} $*
+    return $?
 }
 
-
-
+[ "${0:0:1}" == "/" ] && __called $0 $*
+[ "${0:0:1}" == "/" ] || __sourced $0 $*

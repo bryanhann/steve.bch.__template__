@@ -1,0 +1,20 @@
+#!/bin/bash
+NAME=bch.foo
+
+__sourced () {
+    export _0NAME=$NAME
+    export _0PATH=$(which $NAME)
+    export _1NAME=src:${2-NULL}
+    export _1PATH=${_0PATH}.d/${_1NAME}
+    shift
+    shift
+    [ ! -f ${_1PATH} ] && {
+        echo "[. $_0NAME]: missing '$_1NAME'" >&2
+        return 97
+    }
+    . ${_1PATH} $*
+    return $?
+}
+
+__sourced $0 $*
+
